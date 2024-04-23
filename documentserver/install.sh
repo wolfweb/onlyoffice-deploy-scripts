@@ -69,6 +69,8 @@ install_package() {
 
   ensure_dependency_packages
 
+  install_rabbitmq
+
   echo "Executing install $filename"
 
   if [ -f "$filename" ]; then
@@ -117,6 +119,18 @@ get_package_base() {
   fi
 }
 
+#检测rabbitmq是否安装
+install_rabbitmq(){
+  if ! command -v rabbitmq-server >/dev/null 2>&1; then
+    echo "Rabbitmq not found. Installing rabbitmq....."
+    sudo $PACKAGE_MANAGER install -y erlang-nox
+    sudo $PACKAGE_MANAGER install -y rabbitmq-server
+  else
+    echo "Rabbitmq is already installed."
+  fi
+  sudo service rabbitmq-server start
+}
+
 #依赖项安装
 ensure_dependency_packages(){
   sudo $PACKAGE_MANAGER install -y libasound2
@@ -138,8 +152,8 @@ if [ "$PACKAGE_MANAGER" = "None" ]; then
   exit 1
 fi
 echo "System update"
-#sudo $PACKAGE_MANAGER update -y
-#sudo $PACKAGE_MANAGER upgrade -y
+sudo $PACKAGE_MANAGER update -y
+sudo $PACKAGE_MANAGER upgrade -y
 
 package_base=$(get_package_base)
 file=$(get_install_file "$package_base" "$packname")
